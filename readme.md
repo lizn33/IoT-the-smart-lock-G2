@@ -1,10 +1,7 @@
 
 # List of components:
 
-fingerprint sensor: 
-[AS608](https://gleanntronics.ie/en/products/as608-optical-fingerprint-sensor-jm-101b-fingerprint-matching-4040.html?query_id=2)
-or
-[R3 2560](https://amzn.eu/d/0reH9S5) (cheaper)
+fingerprint sensor: [AS608](https://gleanntronics.ie/en/products/as608-optical-fingerprint-sensor-jm-101b-fingerprint-matching-4040.html?query_id=2)
 
 RFID Module: [RFID-RC522](https://gleanntronics.ie/en/products/rc522-13-56mhz-rfid-reader-module-card-key-fob-arduino-75.html?gad_source=1&gclid=CjwKCAiA2JG9BhAuEiwAH_zf3gcg8qu53gT0VbhYUyS9kyr-O5qhl11eODomB_6cjYMp9f-47O4DaRoCIkoQAvD_BwE#close)
 
