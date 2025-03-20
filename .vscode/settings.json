@@ -9,7 +9,7 @@
         "titleBar.activeBackground": "#3E4305",
         "titleBar.activeForeground": "#F9FCDD"
     },
-    "idf.portWin": "COM5",
+    "idf.portWin": "COM4",
     "idf.customExtraVars": {
         "IDF_TARGET": "esp32c6"
     },
