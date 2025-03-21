@@ -86,7 +86,7 @@ server/lock/code
 ```json
 {
   "code": "645941",
-  "codeId": 1893389214167859200,
+  "codeId": "1893389214167859200",
   "deviceId": 10001,
   "validFrom": "2025-03-22T00:00+08:00",
   "validTo": "2026-02-22T00:00+08:00"
@@ -101,14 +101,14 @@ server/lock/all-code
 [
   {
     "code": "769859",
-    "codeId": 1897785585675399168,
+    "codeId": "1897785585675399168",
     "deviceId": 10001,
     "validFrom": "2025-03-21T16:00:00[GMT]",
     "validTo": "2027-03-05T00:30:00[GMT]"
   },
   {
     "code": "414697",
-    "codeId": 1898098220849545216,
+    "codeId": "1898098220849545216",
     "deviceId": 10001,
     "validFrom": "2025-03-21T16:00:00[GMT]",
     "validTo": "2027-03-05T00:30:00[GMT]"
@@ -128,7 +128,7 @@ device/lock
 
 ```json
 {
-  "deviceId": "10001",
+  "deviceId": 10001,
   "isLocked": true
 }
 ```
@@ -139,7 +139,7 @@ device/lock/code
 
 ```json
 {
-  "deviceId": "10001",
+  "deviceId": 10001,
   "codeId": "替换成收到的codeId",
   "code": "替换成收到的code"
 }
@@ -151,7 +151,7 @@ device/lock/alert
 
 ```json
 {
-  "deviceId": "10001",
+  "deviceId": 10001,
   "type": "MOTOR"
 }
 ```
@@ -170,6 +170,6 @@ device/lock/all-code
 
 ```json
 {
-  "deviceId": "10001"
+  "deviceId": 10001
 }
 ```
