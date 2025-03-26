@@ -15,12 +15,12 @@ Keyboard: [TTP229](https://gleanntronics.ie/en/products/16-button-touch-keyboard
 
 ## App -> 后端 发送数据
 
-http://63.32.52.62/swagger-ui/index.html
+https://8117.me/swagger-ui/index.html
 
 ### 注册
 
 ```plaintext
-POST http://63.32.52.62/api/user/register
+POST https://8117.me/api/user/register
 {
     "username": "alfa",
     "password": "123456",
@@ -31,21 +31,46 @@ POST http://63.32.52.62/api/user/register
 ### 登录
 
 ```plaintext
-GET http://63.32.52.62/api/user/login
+GET https://8117.me/api/user/login
 Authorization: Basic alfa:123456（alfa:123456需要经过base64编码）
 ```
 
-### 查询设备
+### 重置（找回）密码
 
 ```plaintext
-GET http://63.32.52.62/api/device
+PUT https://8117.me/api/user/reset
+{
+  "username": "alfa",
+  "password": "654321",
+  "email": "a@b.cd"
+}
+```
+
+### 获取用户信息
+
+```plaintext
+GET https://8117.me/api/user
+Authorization: Bearer JWT
+```
+
+### 获取设备信息
+
+```plaintext
+GET https://8117.me/api/device
+Authorization: Bearer JWT 
+```
+
+### 获取用户生成的密码
+
+```plaintext
+GET https://8117.me/api/code
 Authorization: Bearer JWT 
 ```
 
 ### 请求生成密码
 
 ```plaintext
-POST http://63.32.52.62/api/code
+POST https://8117.me/api/code
 Authorization: Bearer JWT
 {
     "deviceId": 10001,
@@ -54,15 +79,23 @@ Authorization: Bearer JWT
 }
 ```
 
-### 重置（找回）密码
+### 上传文件
 
 ```plaintext
-PUT http://63.32.52.62/api/user/reset
-{
-  "username": "alfa",
-  "password": "654321",
-  "email": "a@b.cd"
+POST https://8117.me/api/file
+Authorization: Bearer JWT
+Body: form-data{
+    Key=file
+    Type=File
+    Value=上传的文件
 }
+```
+
+### 下载文件
+
+```plaintext
+GET https://8117.me/api/file/{fileName}
+Authorization: Bearer JWT
 ```
 
 ## WebSocket
@@ -75,7 +108,7 @@ WebSocket端点 /websocket
 
 # 单片机端接口文档
 
-mqtt://52.169.3.167:1883
+mqtts://emqx.8117.me:8883
 
 ## 后端 -> ESP32(Broker) 发送数据
 
