@@ -15,12 +15,12 @@ Keyboard: [TTP229](https://gleanntronics.ie/en/products/16-button-touch-keyboard
 
 ## App -> 后端 发送数据
 
-http://63.32.52.62/swagger-ui/index.html
+https://8117.me/swagger-ui/index.html
 
 ### 注册
 
 ```plaintext
-POST http://63.32.52.62/api/user/register
+POST https://8117.me/api/user/register
 {
     "username": "alfa",
     "password": "123456",
@@ -31,21 +31,46 @@ POST http://63.32.52.62/api/user/register
 ### 登录
 
 ```plaintext
-GET http://63.32.52.62/api/user/login
+GET https://8117.me/api/user/login
 Authorization: Basic alfa:123456（alfa:123456需要经过base64编码）
 ```
 
-### 查询设备
+### 重置（找回）密码
 
 ```plaintext
-GET http://63.32.52.62/api/device
+PUT https://8117.me/api/user/reset
+{
+  "username": "alfa",
+  "password": "654321",
+  "email": "a@b.cd"
+}
+```
+
+### 获取用户信息
+
+```plaintext
+GET https://8117.me/api/user
+Authorization: Bearer JWT
+```
+
+### 获取设备信息
+
+```plaintext
+GET https://8117.me/api/device
+Authorization: Bearer JWT 
+```
+
+### 获取用户生成的密码
+
+```plaintext
+GET https://8117.me/api/code
 Authorization: Bearer JWT 
 ```
 
 ### 请求生成密码
 
 ```plaintext
-POST http://63.32.52.62/api/code
+POST https://8117.me/api/code
 Authorization: Bearer JWT
 {
     "deviceId": 10001,
@@ -54,15 +79,23 @@ Authorization: Bearer JWT
 }
 ```
 
-### 重置（找回）密码
+### 上传文件
 
 ```plaintext
-PUT http://63.32.52.62/api/user/reset
-{
-  "username": "alfa",
-  "password": "654321",
-  "email": "a@b.cd"
+POST https://8117.me/api/file
+Authorization: Bearer JWT
+Body: form-data{
+    Key=file
+    Type=File
+    Value=上传的文件
 }
+```
+
+### 下载文件
+
+```plaintext
+GET https://8117.me/api/file/{fileName}
+Authorization: Bearer JWT
 ```
 
 ## WebSocket
@@ -75,9 +108,20 @@ WebSocket端点 /websocket
 
 # 单片机端接口文档
 
-mqtt://52.169.3.167:1883
+mqtts://emqx.8117.me:8883
 
 ## 后端 -> ESP32(Broker) 发送数据
+
+### OTA更新通知
+
+server/lock/ota
+
+```json
+{
+  "deviceId": "10001",
+  "version": "v1.01"
+}
+```
 
 ### 后端生成的密码
 
@@ -87,7 +131,7 @@ server/lock/code
 {
   "code": "645941",
   "codeId": "1893389214167859200",
-  "deviceId": 10001,
+  "deviceId": "10001",
   "validFrom": "2025-03-22T00:00+08:00",
   "validTo": "2026-02-22T00:00+08:00"
 }
@@ -102,14 +146,14 @@ server/lock/all-code
   {
     "code": "769859",
     "codeId": "1897785585675399168",
-    "deviceId": 10001,
+    "deviceId": "10001",
     "validFrom": "2025-03-21T16:00:00[GMT]",
     "validTo": "2027-03-05T00:30:00[GMT]"
   },
   {
     "code": "414697",
     "codeId": "1898098220849545216",
-    "deviceId": 10001,
+    "deviceId": "10001",
     "validFrom": "2025-03-21T16:00:00[GMT]",
     "validTo": "2027-03-05T00:30:00[GMT]"
   }
@@ -128,7 +172,7 @@ device/lock
 
 ```json
 {
-  "deviceId": 10001,
+  "deviceId": "10001",
   "isLocked": true
 }
 ```
@@ -139,7 +183,7 @@ device/lock/code
 
 ```json
 {
-  "deviceId": 10001,
+  "deviceId": "10001",
   "codeId": "替换成收到的codeId",
   "code": "替换成收到的code"
 }
@@ -151,7 +195,7 @@ device/lock/alert
 
 ```json
 {
-  "deviceId": 10001,
+  "deviceId": "10001",
   "type": "MOTOR"
 }
 ```
@@ -170,6 +214,6 @@ device/lock/all-code
 
 ```json
 {
-  "deviceId": 10001
+  "deviceId": "10001"
 }
 ```
