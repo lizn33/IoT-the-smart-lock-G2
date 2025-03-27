@@ -4,6 +4,11 @@
 #include "mqtt_manager.h"
 #include "json.hpp"
 #include "esp_log.h"
+#include "esp_https_ota.h"
+#include "esp_http_client.h"
+#include "esp_ota_ops.h"
+#include "esp_system.h"
+#include "esp_mac.h"
 #include <string>
 
 using json = nlohmann::json;
@@ -29,6 +34,9 @@ public:
      * - "server/lock/all-code"：返回查询的所有密码
      */
     static void registerCallbacks();
+
+    // 回调函数：处理 "server/lock/ota" 主题的消息
+    static void onServerLockOta(const json &data);
 
     // 回调函数：处理 "server/lock/code" 主题的消息
     static void onServerLockCode(const json &data);

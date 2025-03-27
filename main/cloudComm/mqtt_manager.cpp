@@ -1,8 +1,13 @@
 #include "mqtt_manager.h"
+#include "mqtt_message.h"
 
 static const char *TAG = "MqttManager";
+
 esp_mqtt_client_handle_t MqttManager::client = nullptr;
 std::unordered_map<std::string, std::function<void(const json &)>> MqttManager::callbacks;
+
+extern const uint8_t isrgrootx1_pem_start[] asm("_binary_isrgrootx1_pem_start");
+extern const uint8_t isrgrootx1_pem_end[] asm("_binary_isrgrootx1_pem_end");
 
 void MqttManager::init(const char *uri, const char *client_id, const char *username, const char *password)
 {
@@ -14,6 +19,10 @@ void MqttManager::init(const char *uri, const char *client_id, const char *usern
     mqtt_cfg.credentials.username = username;
     mqtt_cfg.credentials.authentication.password = password;
     mqtt_cfg.session.keepalive = 60; // 保持连接心跳时间（秒）
+
+    mqtt_cfg.broker.verification.certificate = (const char *)isrgrootx1_pem_start;
+    mqtt_cfg.broker.verification.certificate_len = isrgrootx1_pem_end - isrgrootx1_pem_start;
+    ESP_LOGI(TAG, "Cert len: %d", mqtt_cfg.broker.verification.certificate_len);
 
     client = esp_mqtt_client_init(&mqtt_cfg);
     if (client == nullptr)
@@ -60,6 +69,7 @@ void MqttManager::eventHandler(void *handler_args, esp_event_base_t base, int32_
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
         // 此处可以选择在连接后订阅默认主题或留给 registerCallback 动态订阅
+        MqttMessage::registerCallbacks();
         break;
 
     case MQTT_EVENT_DATA:
