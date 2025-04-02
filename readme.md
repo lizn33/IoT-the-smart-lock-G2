@@ -217,3 +217,68 @@ device/lock/all-code
   "deviceId": "10001"
 }
 ```
+
+
+# Smart Door Lock System
+
+This project implements a smart door lock system using an ESP32 microcontroller. The system integrates multiple components such as an OLED display, RFID reader, keypad, servo motor, and LED to provide a secure and user-friendly locking mechanism.
+
+## Features
+
+- **RFID Authentication**: Supports RFID cards for unlocking the door.
+- **Keypad Authentication**: Allows users to enter a password to unlock the door.
+- **OLED Display**: Displays system status, password input, and messages.
+- **Servo Motor Control**: Locks and unlocks the door.
+- **LED Indicator**: Provides visual feedback for system status.
+- **Lockout Mechanism**: Locks the system after multiple failed attempts.
+- **Auto-lock**: Automatically locks the door after a set duration.
+
+## Components
+
+### 1. **RFID Reader**
+- Uses the RC522 RFID module to read card UIDs.
+- Supports adding and verifying authorized UIDs.
+- Handles card detection and communication via SPI.
+
+### 2. **Keypad**
+- 4x4 matrix keypad for password input.
+- Supports password entry, clearing, and confirmation.
+- Implements a lockout mechanism after multiple failed attempts.
+
+### 3. **OLED Display**
+- Displays system status, password input, and messages.
+- Provides visual feedback for user interactions.
+- Uses I2C communication for data transfer.
+
+### 4. **Servo Motor**
+- Controls the locking and unlocking mechanism.
+- Supports calibration and precise control of rotation.
+- Uses PWM signals for operation.
+
+### 5. **LED Indicator**
+- Provides visual feedback for system status.
+- Flashes during system startup, password entry, and errors.
+
+## Detailed Pin Instructions
+
+Below is a suggested wiring guide for connecting the components to the ESP32:
+
+| Component    | Signal    | ESP32 Pin   | Notes                                         |
+|--------------|-----------|-------------|-----------------------------------------------|
+| **RFID (RC522)** | MOSI      | GPIO 23    | SPI Master Out Slave In                       |
+|              | MISO      | GPIO 19    | SPI Master In Slave Out                       |
+|              | SCK       | GPIO 18    | SPI Clock                                     |
+|              | CS        | GPIO 5     | SPI Chip Select                               |
+|              | RST       | GPIO 25    | Reset pin (assigned to avoid I2C conflict)    |
+| **Keypad**   | Row 1     | GPIO 32    | Configurable in `config.h`                    |
+|              | Row 2     | GPIO 33    |                                               |
+|              | Row 3     | GPIO 34    |                                               |
+|              | Row 4     | GPIO 35    |                                               |
+|              | Col 1     | GPIO 26    |                                               |
+|              | Col 2     | GPIO 27    |                                               |
+|              | Col 3     | GPIO 14    |                                               |
+|              | Col 4     | GPIO 12    |                                               |
+| **OLED Display** | SDA      | GPIO 21    | I2C Data                                      |
+|              | SCL      | GPIO 22    | I2C Clock                                     |
+| **Servo Motor** | PWM     | GPIO 13    | PWM output for controlling the servo          |
+| **LED Indicator** | LED     | GPIO 2     | Output for status indication                  |

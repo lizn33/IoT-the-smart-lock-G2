@@ -1,3 +1,4 @@
 build/
 *.code-workspace
 .vscode/
+.devcontainer/
