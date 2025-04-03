@@ -32,6 +32,40 @@ void unlock_door(void);
 void lock_door(void);
 void process_key_input(char key);
 
+typedef enum {
+    MQTT_EVENT_LOCK_STATUS,
+    MQTT_EVENT_ALERT
+} mqtt_event_type_t;
+
+typedef struct {
+    mqtt_event_type_t type;
+    char device_id[16]; // 根据需要调整长度
+    union {
+        bool lock_status;           // 用于锁定/解锁状态消息
+        char alert_message[32];     // 用于告警消息
+    };
+} mqtt_event_t;
+
+QueueHandle_t mqtt_queue = NULL;
+
+void mqtt_task(void *pvParameters) {
+    mqtt_event_t event;
+    while (1) {
+        if (xQueueReceive(mqtt_queue, &event, portMAX_DELAY) == pdPASS) {
+            switch(event.type) {
+                case MQTT_EVENT_LOCK_STATUS:
+                    mqtt_send_lock_status(event.device_id, event.lock_status);
+                    break;
+                case MQTT_EVENT_ALERT:
+                    mqtt_send_alert(event.device_id, event.alert_message);
+                    break;
+            }
+        }
+    }
+}
+
+
+
 /**
  * Lock the door
  */
@@ -56,7 +90,12 @@ void lock_door(void)
         oled_update_status(current_door_state, is_locked_out, lockout_start_time, password_index);
         
         ESP_LOGI(TAG, "Door locked");
-        mqtt_send_lock_status(device_id, true );
+        mqtt_event_t event;
+        event.type = MQTT_EVENT_LOCK_STATUS;
+        strncpy(event.device_id, device_id, sizeof(event.device_id));
+        event.lock_status = true;  // 或 false，根据需要
+        xQueueSend(mqtt_queue, &event, portMAX_DELAY);
+        
 
     } else {
         ESP_LOGI(TAG, "Door already locked");
@@ -87,7 +126,12 @@ void unlock_door(void)
         oled_update_status(current_door_state, is_locked_out, lockout_start_time, password_index);
         
         ESP_LOGI(TAG, "Door unlocked");
-        mqtt_send_lock_status(device_id, false);
+        mqtt_event_t event;
+        event.type = MQTT_EVENT_LOCK_STATUS;
+        strncpy(event.device_id, device_id, sizeof(event.device_id));
+        event.lock_status = false;  // 或 false，根据需要
+        xQueueSend(mqtt_queue, &event, portMAX_DELAY);
+
     } else {
         ESP_LOGI(TAG, "Door already unlocked");
     }
@@ -139,7 +183,12 @@ static void check_password(void)
         attempt_count = 0;
     } else {
         ESP_LOGI(TAG, "Password incorrect!");
-        mqtt_send_alert(device_id, "WRONG_PASSCODE");
+        mqtt_event_t event;
+        event.type = MQTT_EVENT_ALERT;
+        strncpy(event.device_id, device_id, sizeof(event.device_id));
+        strncpy(event.alert_message, "WRONG_PASSCODE", sizeof(event.alert_message));
+        xQueueSend(mqtt_queue, &event, portMAX_DELAY);
+
         
         // Update OLED display
         char msg[32];
@@ -166,7 +215,12 @@ static void check_password(void)
             // Update OLED display
             oled_show_message("System locked!", 1500);
             oled_update_status(current_door_state, is_locked_out, lockout_start_time, password_index);
-            mqtt_send_alert(device_id, "LOCKOUT");
+            mqtt_event_t event;
+            event.type = MQTT_EVENT_ALERT;
+            strncpy(event.device_id, device_id, sizeof(event.device_id));
+            strncpy(event.alert_message, "LOCKOUT", sizeof(event.alert_message));
+            xQueueSend(mqtt_queue, &event, portMAX_DELAY);
+
             
             // Long LED flashing to indicate lockout
             for (int i = 0; i < 10; i++) {
@@ -249,6 +303,16 @@ void app_main(void)
     
     // Brief delay to ensure system stability
     vTaskDelay(pdMS_TO_TICKS(500));
+    
+    mqtt_queue = xQueueCreate(10, sizeof(mqtt_event_t));
+    if (mqtt_queue == NULL) {
+        ESP_LOGE(TAG, "Failed to create MQTT queue");
+    }
+
+    if (xTaskCreate(mqtt_task, "mqtt_task", 4096, NULL, 5, NULL) != pdPASS) {
+        ESP_LOGE(TAG, "Failed to create MQTT task");
+    }
+
     
     // Initialize most basic components first
     ESP_LOGI(TAG, "Initializing LED...");
