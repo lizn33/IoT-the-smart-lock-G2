@@ -12,7 +12,11 @@
 #include "servo.h"
 #include "led.h"
 
+#include "mqtt_wrappers.h"
+
 static const char *TAG = TAG_LOCK;
+static const char* device_id = "10001";
+
 
 // Password and door state
 static char correct_password[MAX_PASSWORD_LENGTH] = "1234";  // Default password
@@ -52,6 +56,8 @@ void lock_door(void)
         oled_update_status(current_door_state, is_locked_out, lockout_start_time, password_index);
         
         ESP_LOGI(TAG, "Door locked");
+        mqtt_send_lock_status(device_id, true );
+
     } else {
         ESP_LOGI(TAG, "Door already locked");
     }
@@ -81,6 +87,7 @@ void unlock_door(void)
         oled_update_status(current_door_state, is_locked_out, lockout_start_time, password_index);
         
         ESP_LOGI(TAG, "Door unlocked");
+        mqtt_send_lock_status(device_id, false);
     } else {
         ESP_LOGI(TAG, "Door already unlocked");
     }
@@ -132,6 +139,7 @@ static void check_password(void)
         attempt_count = 0;
     } else {
         ESP_LOGI(TAG, "Password incorrect!");
+        mqtt_send_alert(device_id, "WRONG_PASSCODE");
         
         // Update OLED display
         char msg[32];
@@ -158,6 +166,7 @@ static void check_password(void)
             // Update OLED display
             oled_show_message("System locked!", 1500);
             oled_update_status(current_door_state, is_locked_out, lockout_start_time, password_index);
+            mqtt_send_alert(device_id, "LOCKOUT");
             
             // Long LED flashing to indicate lockout
             for (int i = 0; i < 10; i++) {
@@ -279,6 +288,29 @@ void app_main(void)
         oled_show_message("RFID Ready!", 1000);
     }
     
+    // Initialize device ID
+    ESP_LOGI(TAG, "Device ID: %s", device_id);
+    
+    // WiFi credentials
+    const char* wifi_ssid = "test"; // Use your actual WiFi
+    const char* wifi_password = "12345678";
+    
+    // MQTT credentials
+    const char* broker_uri = "mqtts://emqx.8117.me:8883";
+    const char* client_id = "esp32_door_lock";
+    const char* broker_username = "alice";
+    const char* broker_password = "alice123456";
+    
+    // Initialize WiFi and wait for connection
+    ESP_LOGI(TAG, "Initializing WiFi...");
+    wifi_init(wifi_ssid, wifi_password);
+    vTaskDelay(pdMS_TO_TICKS(15000)); // Wait for WiFi connection
+    
+    // Initialize MQTT
+    ESP_LOGI(TAG, "Initializing MQTT...");
+    mqtt_init(broker_uri, client_id, broker_username, broker_password);
+    vTaskDelay(pdMS_TO_TICKS(2000)); // Wait for MQTT connection
+
     // Ensure door is in locked position at startup
     oled_show_message("Locking door...", 0);
     lock_door();

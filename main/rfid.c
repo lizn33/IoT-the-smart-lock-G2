@@ -7,8 +7,11 @@
 #include "config.h"
 #include "rfid.h"
 #include "oled.h"
+#include "mqtt_wrappers.h"
 
 static const char *TAG = TAG_RFID;
+static const char* device_id = "10001";
+
 
 // RC522 SPI handle
 static spi_device_handle_t rc522_spi = NULL;
@@ -779,6 +782,7 @@ void rfid_task(void *arg)
                 }
             } else {
                 oled_show_message("Card denied!", 2000);
+                mqtt_send_alert(device_id, "UNAUTHORIZED_CARD");
             }
             
             // Prevent repeated reading of the same card, delay 2 seconds

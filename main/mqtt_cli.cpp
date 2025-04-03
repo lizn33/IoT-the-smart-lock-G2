@@ -3,7 +3,7 @@
 #include "cloudComm/mqtt_message.h"
 
 // 确保 app_main 具有 C 链接性
-extern "C" void app_main(void)
+extern "C" void mqtt_test_main(void)
 {
     esp_log_level_set("*", ESP_LOG_DEBUG);
 
@@ -13,8 +13,8 @@ extern "C" void app_main(void)
     // const char *broker_uri = "mqtt://52.169.3.167:1883";
     const char *client_id = "esp32_client_01";
 
-    const char *wifi_ssid = "Galaxy S24 Ultra AD23";
-    const char *wifi_password = "qwezxc123";
+    const char *wifi_ssid = "test";
+    const char *wifi_password = "12345678";
 
     // WifiManager::init("Galaxy S24 Ultra AD23", "qwezxc123");
     // MqttManager::init("mqtt://192.109.228.41:1883", "esp32_client_01", "alice", "alice123456");
