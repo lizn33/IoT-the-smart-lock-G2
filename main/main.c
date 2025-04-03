@@ -292,9 +292,9 @@ void app_main(void)
     ESP_LOGI(TAG, "Device ID: %s", device_id);
     
     // WiFi credentials
-    const char* wifi_ssid = "test"; // Use your actual WiFi
-    const char* wifi_password = "12345678";
-    
+    const char *wifi_ssid = "Galaxy S24 Ultra AD23"; // Use your actual WiFi
+    const char *wifi_password = "qwezxc123";
+
     // MQTT credentials
     const char* broker_uri = "mqtts://emqx.8117.me:8883";
     const char* client_id = "esp32_door_lock";
@@ -343,4 +343,13 @@ void app_main(void)
     ESP_LOGI(TAG, "System initialization complete.");
     ESP_LOGI(TAG, "Enter password or scan authorized RFID card to unlock door.");
     ESP_LOGI(TAG, "=================================================");
+
+    mqtt_send_lock_status("10001", true);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    mqtt_send_lock_code("10001", "100", "100");
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    mqtt_send_alert("10001", "MOTOR");
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    request_all_code("10001");
+    vTaskDelay(pdMS_TO_TICKS(1000));
 }

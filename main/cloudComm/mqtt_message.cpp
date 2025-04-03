@@ -1,5 +1,5 @@
 #include "mqtt_message.h"
-
+#include "password.h"
 
 static const char *TAG = "MqttMessage";
 
@@ -66,6 +66,7 @@ void MqttMessage::onServerLockCode(const json &data)
 {
     // TODO: 在此处理后端生成的密码消息
     ESP_LOGI(TAG, "Received server/lock/code message");
+    add_password(to_string(data["code"]).c_str(), to_string(data["validTo"]).c_str());
 
     MqttMessage::sendDeviceLockCode(to_string(data["deviceId"]), data["codeId"], data["code"]);
 
@@ -77,9 +78,12 @@ void MqttMessage::onServerLockAllCode(const json &data)
     // TODO: 在此处理返回查询所有密码的消息
 
     ESP_LOGI(TAG, "Received server/lock/all-code message");
-    // 例如：解析 data 数组中的每个密码信息
-}
 
+    for (const auto &item : data)
+    {
+        add_password(to_string(item["code"]).c_str(), to_string(item["validTo"]).c_str());
+    }
+}
 ///////////////////////////
 // 发送消息接口实现
 ///////////////////////////

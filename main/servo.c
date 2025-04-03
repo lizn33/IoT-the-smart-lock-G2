@@ -40,7 +40,8 @@ esp_err_t servo_move(uint32_t pulse_width_us)
         return ret;
     }
     
-    ESP_LOGI(TAG, "Servo pulse set to: %d us (duty: %d)", pulse_width_us, duty);
+    // ESP_LOGI(TAG, "Servo pulse set to: %d us (duty: %d)", pulse_width_us, duty);
+    ESP_LOGI(TAG, "Servo pulse set to: %u us (duty: %u)", (unsigned int)pulse_width_us, (unsigned int)duty);
     return ESP_OK;
 }
 

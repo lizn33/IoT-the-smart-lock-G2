@@ -21,8 +21,17 @@ void mqtt_send_lock_status(const char* device_id, bool is_locked) {
     MqttMessage::sendDeviceLock(std::string(device_id), is_locked);
 }
 
+void mqtt_send_lock_code(const char* device_id, const char* code_id, const char* code) {
+    MqttMessage::sendDeviceLockCode(std::string(device_id), std::string(code_id), std::string(code));
+}
+
 void mqtt_send_alert(const char* device_id, const char* alert_type) {
     MqttMessage::sendDeviceLockAlert(std::string(device_id), std::string(alert_type));
+}
+
+void request_all_code(const char *device_id)
+{
+    MqttMessage::requestDeviceAllCode(std::string(device_id));
 }
 
 void init_device_id(char* out_device_id, int max_len) {
