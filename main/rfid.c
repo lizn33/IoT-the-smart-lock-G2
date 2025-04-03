@@ -41,6 +41,24 @@ static int rc522_request(uint8_t req_mode, uint8_t *tag_type);
 static int rc522_anticoll(uint8_t *serial_num);
 static int rc522_select_tag(uint8_t *serial_num);
 
+typedef enum {
+    MQTT_EVENT_LOCK_STATUS,
+    MQTT_EVENT_ALERT
+} mqtt_event_type_t;
+
+typedef struct {
+    mqtt_event_type_t type;
+    char device_id[16]; // 根据需要调整长度
+    union {
+        bool lock_status;           // 用于锁定/解锁状态消息
+        char alert_message[32];     // 用于告警消息
+    };
+} mqtt_event_t;
+
+
+extern QueueHandle_t mqtt_queue;
+
+
 /**
  * Debug register access operations
  */
@@ -782,7 +800,11 @@ void rfid_task(void *arg)
                 }
             } else {
                 oled_show_message("Card denied!", 2000);
-                mqtt_send_alert(device_id, "UNAUTHORIZED_CARD");
+                mqtt_event_t event;
+                event.type = MQTT_EVENT_ALERT;
+                strncpy(event.device_id, device_id, sizeof(event.device_id));
+                strncpy(event.alert_message, "UNAUTHORIZED_CARD", sizeof(event.alert_message));
+                xQueueSend(mqtt_queue, &event, portMAX_DELAY);
             }
             
             // Prevent repeated reading of the same card, delay 2 seconds
