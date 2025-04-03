@@ -14,14 +14,14 @@
 
 #include "mqtt_wrappers.h"
 
+#include "password.h"
+#include "mqtt_common.h"
+
 static const char *TAG = TAG_LOCK;
 static const char* device_id = "10001";
 
 
 // Password and door state
-static char correct_password[MAX_PASSWORD_LENGTH] = "1234";  // Default password
-static char entered_password[MAX_PASSWORD_LENGTH];           // User entered password
-static int password_index = 0;                              // Password input position
 static int attempt_count = 0;                               // Current attempt count
 static bool is_locked_out = false;                          // Lockout status
 static TickType_t lockout_start_time = 0;                   // Lockout start time
@@ -32,19 +32,9 @@ void unlock_door(void);
 void lock_door(void);
 void process_key_input(char key);
 
-typedef enum {
-    MQTT_EVENT_LOCK_STATUS,
-    MQTT_EVENT_ALERT
-} mqtt_event_type_t;
+static char entered_password[MAX_PASSWORD_LENGTH];
+static int password_index = 0;
 
-typedef struct {
-    mqtt_event_type_t type;
-    char device_id[16]; // 根据需要调整长度
-    union {
-        bool lock_status;           // 用于锁定/解锁状态消息
-        char alert_message[32];     // 用于告警消息
-    };
-} mqtt_event_t;
 
 QueueHandle_t mqtt_queue = NULL;
 
@@ -58,6 +48,13 @@ void mqtt_task(void *pvParameters) {
                     break;
                 case MQTT_EVENT_ALERT:
                     mqtt_send_alert(event.device_id, event.alert_message);
+                    break;
+                case MQTT_EVENT_PASSWORD:
+                    // Add the received password to the password management system
+                    ESP_LOGI(TAG, "Received new password: %s with ID: %s", 
+                             event.password_data.password, event.password_data.code_id);
+                    ESP_LOGI(TAG, "Current password count: %d", get_password_control_instance()->count);
+                    add_password(event.password_data.password, event.password_data.timestamp);
                     break;
             }
         }
@@ -152,12 +149,16 @@ static void clear_password(void)
     oled_update_password(password_index); // Clear message
 }
 
-/**
- * Check password and unlock door if correct
- */
 static void check_password(void)
 {
-    if (strcmp(entered_password, correct_password) == 0) {
+    ESP_LOGI(TAG, "Checking password: %s", entered_password);
+    for (int i = 0; i < get_password_control_instance()->count; i++) {
+        ESP_LOGI(TAG, "Stored password[%d]: %s, expiry: %s", 
+                i,
+                get_password_control_instance()->entries[i].password,
+                get_password_control_instance()->entries[i].timestamp);
+    }
+    if (is_password_valid(entered_password)) {
         ESP_LOGI(TAG, "Password correct!");
         
         // Update OLED display
@@ -313,6 +314,10 @@ void app_main(void)
         ESP_LOGE(TAG, "Failed to create MQTT task");
     }
 
+    // Initialize password management system
+    password_control *pwd_ctrl = get_password_control_instance();
+    // Add the default password with a far-future expiration
+    add_password("1234", "2099-12-31T23:59+00:00");
     
     // Initialize most basic components first
     ESP_LOGI(TAG, "Initializing LED...");

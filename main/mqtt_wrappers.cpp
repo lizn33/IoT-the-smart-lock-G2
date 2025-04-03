@@ -3,7 +3,9 @@
 #include "cloudComm/mqtt_manager.h"
 #include "cloudComm/wifi_manager.h"
 #include "esp_mac.h"
-#include <string>
+#include "mqtt_common.h"
+
+extern QueueHandle_t mqtt_queue;
 
 extern "C" {
 
@@ -32,6 +34,18 @@ void mqtt_send_alert(const char* device_id, const char* alert_type) {
 void request_all_code(const char *device_id)
 {
     MqttMessage::requestDeviceAllCode(std::string(device_id));
+}
+
+void handle_password_message(const char* device_id, const char* code_id, 
+    const char* password, const char* timestamp) {
+mqtt_event_t event;
+event.type = MQTT_EVENT_PASSWORD;
+strncpy(event.device_id, device_id, sizeof(event.device_id) - 1);
+strncpy(event.password_data.code_id, code_id, sizeof(event.password_data.code_id) - 1);
+strncpy(event.password_data.password, password, sizeof(event.password_data.password) - 1);
+strncpy(event.password_data.timestamp, timestamp, sizeof(event.password_data.timestamp) - 1);
+
+xQueueSend(mqtt_queue, &event, portMAX_DELAY);
 }
 
 void init_device_id(char* out_device_id, int max_len) {

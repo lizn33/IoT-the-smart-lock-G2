@@ -68,8 +68,15 @@ void MqttMessage::onServerLockCode(const json &data)
     ESP_LOGI(TAG, "Received server/lock/code message");
     std::string codeStr = data["code"].get<std::string>();
     std::string validTo = data["validTo"].get<std::string>();
-    add_password(codeStr.c_str(), validTo.c_str());
-
+    int flag = add_password(codeStr.c_str(), validTo.c_str());
+    if(flag == 0)
+    {
+        ESP_LOGI(TAG, "Password added successfully: %s", codeStr.c_str());
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Failed to add password: %s", codeStr.c_str());
+    }
     MqttMessage::sendDeviceLockCode(data["deviceId"], data["codeId"], data["code"]);
 
     // 例如：可以解析 data 中的 "code", "codeId", "deviceId", "validFrom", "validTo"
@@ -83,7 +90,18 @@ void MqttMessage::onServerLockAllCode(const json &data)
 
     for (const auto &item : data)
     {
-        add_password(to_string(item["code"]).c_str(), to_string(item["validTo"]).c_str());
+        
+        std::string codeStr = item["code"].get<std::string>();
+        std::string validTo = item["validTo"].get<std::string>();
+        int flag = add_password(codeStr.c_str(), validTo.c_str());
+        if(flag == 0)
+        {
+            ESP_LOGI(TAG, "Password added successfully: %s", codeStr.c_str());
+        }
+        else
+        {
+            ESP_LOGE(TAG, "Failed to add password: %s", codeStr.c_str());
+        }
     }
 }
 ///////////////////////////

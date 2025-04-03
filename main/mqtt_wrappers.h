@@ -20,6 +20,8 @@ void mqtt_send_alert(const char *device_id, const char *alert_type);
 
 void request_all_code(const char *device_id);
 
+void handle_password_message(const char* device_id, const char* code_id, const char* password, const char* timestamp);
+
 // Get device ID from MAC address
 void init_device_id(char *out_device_id, int max_len);
 
