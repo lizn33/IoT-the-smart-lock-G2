@@ -66,7 +66,9 @@ void MqttMessage::onServerLockCode(const json &data)
 {
     // TODO: 在此处理后端生成的密码消息
     ESP_LOGI(TAG, "Received server/lock/code message");
-    add_password(to_string(data["code"]).c_str(), to_string(data["validTo"]).c_str());
+    std::string codeStr = data["code"].get<std::string>();
+    std::string validTo = data["validTo"].get<std::string>();
+    add_password(codeStr.c_str(), validTo.c_str());
 
     MqttMessage::sendDeviceLockCode(data["deviceId"], data["codeId"], data["code"]);
 
