@@ -66,73 +66,70 @@ void mqtt_task(void *pvParameters) {
 /**
  * Lock the door
  */
-void lock_door(void)
-{
-    if (current_door_state == DOOR_UNLOCKED) {
-        ESP_LOGI(TAG, "Locking door...");
-        
-        // Update OLED display
-        oled_show_message("Locking door...", 0);
-        
-        // Lock with servo
-        servo_move(SERVO_CW_SPEED);
-        vTaskDelay(pdMS_TO_TICKS(SERVO_ROTATION_TIME));
-        servo_stop();
-        
-        // Update status
-        led_set_state(false);  // Turn off LED when door is locked
-        current_door_state = DOOR_LOCKED;
-        
-        // Update OLED status
-        oled_update_status(current_door_state, is_locked_out, lockout_start_time, password_index);
-        
-        ESP_LOGI(TAG, "Door locked");
-        mqtt_event_t event;
-        event.type = MQTT_EVENT_LOCK_STATUS;
-        strncpy(event.device_id, device_id, sizeof(event.device_id));
-        event.lock_status = true;  // 或 false，根据需要
-        xQueueSend(mqtt_queue, &event, portMAX_DELAY);
-        
-
-    } else {
-        ESP_LOGI(TAG, "Door already locked");
-    }
-}
+ void lock_door(void)
+ {
+     if (current_door_state == DOOR_UNLOCKED) {
+         ESP_LOGI(TAG, "Locking door...");
+         
+         // Update OLED display
+         oled_show_message("Locking door...", 0);
+         
+         // Lock with servo - move to locked position
+         servo_move(SERVO_LOCKED_POS);
+         vTaskDelay(pdMS_TO_TICKS(SERVO_MOVE_TIME));
+         servo_stop(); // Detach servo after movement to prevent jitter
+         
+         // Update status
+         led_set_state(false);  // Turn off LED when door is locked
+         current_door_state = DOOR_LOCKED;
+         
+         // Update OLED status
+         oled_update_status(current_door_state, is_locked_out, lockout_start_time, password_index);
+         
+         ESP_LOGI(TAG, "Door locked");
+         mqtt_event_t event;
+         event.type = MQTT_EVENT_LOCK_STATUS;
+         strncpy(event.device_id, device_id, sizeof(event.device_id));
+         event.lock_status = true;  // Locked state
+         xQueueSend(mqtt_queue, &event, portMAX_DELAY);
+     } else {
+         ESP_LOGI(TAG, "Door already locked");
+     }
+ }
 
 /**
  * Unlock the door
  */
-void unlock_door(void)
-{
-    if (current_door_state == DOOR_LOCKED) {
-        ESP_LOGI(TAG, "Unlocking door...");
-        
-        // Update OLED display
-        oled_show_message("Unlocking door...", 0);
-        
-        // Unlock with servo
-        servo_move(SERVO_CCW_SPEED);
-        vTaskDelay(pdMS_TO_TICKS(SERVO_ROTATION_TIME));
-        servo_stop();
-        
-        // Update status
-        led_set_state(true);  // Turn on LED when door is unlocked
-        current_door_state = DOOR_UNLOCKED;
-        
-        // Update OLED status
-        oled_update_status(current_door_state, is_locked_out, lockout_start_time, password_index);
-        
-        ESP_LOGI(TAG, "Door unlocked");
-        mqtt_event_t event;
-        event.type = MQTT_EVENT_LOCK_STATUS;
-        strncpy(event.device_id, device_id, sizeof(event.device_id));
-        event.lock_status = false;  // 或 false，根据需要
-        xQueueSend(mqtt_queue, &event, portMAX_DELAY);
-
-    } else {
-        ESP_LOGI(TAG, "Door already unlocked");
-    }
-}
+ void unlock_door(void)
+ {
+     if (current_door_state == DOOR_LOCKED) {
+         ESP_LOGI(TAG, "Unlocking door...");
+         
+         // Update OLED display
+         oled_show_message("Unlocking door...", 0);
+         
+         // Unlock with servo - move to unlocked position
+         servo_move(SERVO_UNLOCKED_POS);
+         vTaskDelay(pdMS_TO_TICKS(SERVO_MOVE_TIME));
+         servo_stop(); // Detach servo after movement to prevent jitter
+         
+         // Update status
+         led_set_state(true);  // Turn on LED when door is unlocked
+         current_door_state = DOOR_UNLOCKED;
+         
+         // Update OLED status
+         oled_update_status(current_door_state, is_locked_out, lockout_start_time, password_index);
+         
+         ESP_LOGI(TAG, "Door unlocked");
+         mqtt_event_t event;
+         event.type = MQTT_EVENT_LOCK_STATUS;
+         strncpy(event.device_id, device_id, sizeof(event.device_id));
+         event.lock_status = false;  // Unlocked state
+         xQueueSend(mqtt_queue, &event, portMAX_DELAY);
+     } else {
+         ESP_LOGI(TAG, "Door already unlocked");
+     }
+ }
 
 /**
  * Clear entered password

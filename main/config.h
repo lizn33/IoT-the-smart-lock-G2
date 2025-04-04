@@ -182,18 +182,22 @@
 #define COL_3_PIN   GPIO_NUM_20 
 #define COL_4_PIN   GPIO_NUM_19 
 
-/* ===== Servo Configuration for 360° Continuous Rotation Servo ===== */
+/* ===== Servo Configuration for Standard MS18 Servo ===== */
 #define SERVO_TIMER             LEDC_TIMER_0
 #define SERVO_MODE              LEDC_LOW_SPEED_MODE
 #define SERVO_CHANNEL           LEDC_CHANNEL_0
 #define SERVO_RESOLUTION_BITS   LEDC_TIMER_10_BIT
 #define SERVO_FREQUENCY         50      // Standard 50Hz for servo control
 
-/* Continuous Rotation Servo Control Values */
-#define SERVO_STOP_PULSE        1500    // Center pulse to stop rotation (microseconds)
-#define SERVO_CW_SPEED          1000    // Clockwise rotation - faster speed (was 1300)
-#define SERVO_CCW_SPEED         2000    // Counter-clockwise rotation - faster speed (was 1700)
-#define SERVO_ROTATION_TIME     1000    // Time in ms to rotate to simulate lock/unlock action (doubled)
+/* Standard Servo Control Values (MS18) */
+#define SERVO_MIN_PULSE         500     // Minimum pulse width (0 degrees) in microseconds
+#define SERVO_MAX_PULSE         2500    // Maximum pulse width (180 degrees) in microseconds
+#define SERVO_MID_PULSE         1500    // Middle position (90 degrees) in microseconds
+
+/* Lock positions */
+#define SERVO_LOCKED_POS        800     // Locked position pulse width in microseconds (~30 degrees)
+#define SERVO_UNLOCKED_POS      2200    // Unlocked position pulse width in microseconds (~150 degrees)
+#define SERVO_MOVE_TIME         1000    // Time in ms to allow the servo to reach position
 
 // Password configuration
 #define MAX_PASSWORD_LENGTH 10
