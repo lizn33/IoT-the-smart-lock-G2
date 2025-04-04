@@ -36,30 +36,35 @@ void MqttMessage::onServerLockOta(const json &data)
     std::string file_name = data["version"];
     std::string url = url_prefix + file_name;
 
+    #ifdef OTA_OPEN
+    extern const uint8_t isrgrootx1_pem_start[] asm("_binary_isrgrootx1_pem_start");
+    extern const uint8_t isrgrootx1_pem_end[] asm("_binary_isrgrootx1_pem_end");
+
     ESP_LOGI(TAG, "Received OTA update notification, update URL: %s", url.c_str());
 
-    // // 先创建 HTTP 配置实例
-    // esp_http_client_config_t http_config = {};
-    // http_config.url = url.c_str();
-    // http_config.cert_pem = (const char *)isrgrootx1_pem_start;
-    // http_config.timeout_ms = 10000; // 可根据需要调整超时时间
+    // 先创建 HTTP 配置实例
+    esp_http_client_config_t http_config = {};
+    http_config.url = url.c_str();
+    http_config.cert_pem = (const char *)isrgrootx1_pem_start;
+    http_config.timeout_ms = 10000; // 可根据需要调整超时时间
 
-    // // 然后创建 HTTPS OTA 配置，并将 http_config 的地址赋给 http_config 成员
-    // esp_https_ota_config_t ota_config = {};
-    // ota_config.http_config = &http_config;
+    // 然后创建 HTTPS OTA 配置，并将 http_config 的地址赋给 http_config 成员
+    esp_https_ota_config_t ota_config = {};
+    ota_config.http_config = &http_config;
 
-    // ESP_LOGI(TAG, "Starting OTA update...");
-    // esp_err_t ret = esp_https_ota(&ota_config);
-    // if (ret == ESP_OK)
-    // {
-    //     ESP_LOGI(TAG, "OTA update successful, restarting system...");
-    //     esp_restart();
-    // }
-    // else
-    // {
-    //     ESP_LOGE(TAG, "OTA update failed, error = %d", ret);
-    //     // 根据需要增加错误处理或重试逻辑
-    // }
+    ESP_LOGI(TAG, "Starting OTA update...");
+    esp_err_t ret = esp_https_ota(&ota_config);
+    if (ret == ESP_OK)
+    {
+        ESP_LOGI(TAG, "OTA update successful, restarting system...");
+        esp_restart();
+    }
+    else
+    {
+        ESP_LOGE(TAG, "OTA update failed, error = %d", ret);
+        // 根据需要增加错误处理或重试逻辑
+    }
+    #endif OTA_OPEN
 }
 
 void MqttMessage::onServerLockCode(const json &data)
